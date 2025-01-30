@@ -935,7 +935,7 @@ public class TaskModel {
         this.externalOutputPayloadStoragePath = null;
     }
 
-    private Map<String, Object> deepCopyInputOutput(Map<String, Object> map) {
+    private static Map<String, Object> deepCopyInputOutput(Map<String, Object> map) {
         if (map == null) {
             return null;
         }
