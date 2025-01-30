@@ -26,14 +26,13 @@ import org.springframework.beans.BeanUtils;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-import com.netflix.conductor.common.utils.SummaryUtil;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.protobuf.Any;
 
 public class TaskModel {
-    private static final Logger logger = LoggerFactory.getLogger(SummaryUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(TaskModel.class);
 
     public enum Status {
         IN_PROGRESS(false, true, true),
