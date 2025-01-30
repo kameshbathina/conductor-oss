@@ -641,6 +641,13 @@ public class TaskModel {
         return copy;
     }
 
+    /**
+     * Create a copy with inputs and outputs being deep copies of the original data. Used to create
+     * a snapshot of a model for concurrent scenarios as TaskPublisher firing off notifications in a
+     * separate thread.
+     *
+     * @return A copy of this model object with deep copies of input and output.
+     */
     public TaskModel copyWithDeepInputOutput() {
         TaskModel copy = new TaskModel();
         BeanUtils.copyProperties(this, copy);
@@ -946,8 +953,6 @@ public class TaskModel {
             try (ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
                     ObjectInputStream ois = new ObjectInputStream(bis)) {
                 return (Map<String, Object>) ois.readObject();
-            } catch (Exception e) {
-                throw e;
             }
         } catch (IOException | ClassNotFoundException e) {
             logger.error("Exception while creating a deep copy of input or output");

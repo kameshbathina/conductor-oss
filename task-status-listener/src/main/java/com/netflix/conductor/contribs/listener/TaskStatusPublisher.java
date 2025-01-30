@@ -148,6 +148,9 @@ public class TaskStatusPublisher implements TaskStatusListener {
 
     @Override
     public void onTaskScheduled(TaskModel task) {
+        // A task in a non-terminal state may modify inputs as it progresses, so if our publishing thread attempts to serialize
+        // input/output to json it may run into a ConcurrentModificationException unless we create deep copies.
+        // Besides, it's generally wrong to push out something while it is modified concurrently.
         if (subscribedTaskStatusList.contains(TaskModel.Status.SCHEDULED.name())) {
             enqueueTask(task.copyWithDeepInputOutput());
         }
@@ -191,6 +194,9 @@ public class TaskStatusPublisher implements TaskStatusListener {
     @Override
     public void onTaskInProgress(TaskModel task) {
         if (subscribedTaskStatusList.contains(TaskModel.Status.IN_PROGRESS.name())) {
+            // A task in a non-terminal state may modify inputs as it progresses, so if our publishing thread attempts to serialize
+            // input/output to json it may run into a ConcurrentModificationException unless we create deep copies.
+            // Besides, it's generally wrong to push out something while it is modified concurrently.
             enqueueTask(task.copyWithDeepInputOutput());
         }
     }
