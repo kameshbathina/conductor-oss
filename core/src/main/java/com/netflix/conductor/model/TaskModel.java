@@ -12,12 +12,15 @@
  */
 package com.netflix.conductor.model;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import com.netflix.conductor.common.metadata.tasks.Task;
@@ -29,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.protobuf.Any;
 
 public class TaskModel {
+    private static final Logger logger = LoggerFactory.getLogger(TaskModel.class);
 
     public enum Status {
         IN_PROGRESS(false, true, true),
@@ -637,6 +641,21 @@ public class TaskModel {
         return copy;
     }
 
+    /**
+     * Create a copy with inputs and outputs being deep copies of the original data. Used to create
+     * a snapshot of a model for concurrent scenarios as TaskPublisher firing off notifications in a
+     * separate thread.
+     *
+     * @return A copy of this model object with deep copies of input and output.
+     */
+    public TaskModel copyWithDeepInputOutput() {
+        TaskModel copy = new TaskModel();
+        BeanUtils.copyProperties(this, copy);
+        copy.inputData = deepCopyInputOutput(this.inputData);
+        copy.outputData = deepCopyInputOutput(this.outputData);
+        return copy;
+    }
+
     public void externalizeInput(String path) {
         this.inputPayload = this.inputData;
         this.inputData = new HashMap<>();
@@ -920,5 +939,24 @@ public class TaskModel {
         this.outputData.clear();
         this.outputPayload.clear();
         this.externalOutputPayloadStoragePath = null;
+    }
+
+    private static Map<String, Object> deepCopyInputOutput(Map<String, Object> map) {
+        if (map == null) {
+            return null;
+        }
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+
+            oos.writeObject(map);
+
+            try (ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+                    ObjectInputStream ois = new ObjectInputStream(bis)) {
+                return (Map<String, Object>) ois.readObject();
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            logger.error("Exception while creating a deep copy of input or output");
+            throw new RuntimeException(e);
+        }
     }
 }
