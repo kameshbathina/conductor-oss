@@ -1377,6 +1377,7 @@ public abstract class AbstractProtoMapper {
         if (from.getCacheConfig() != null) {
             to.setCacheConfig( toProto( from.getCacheConfig() ) );
         }
+        to.addAllMaskedFields( from.getMaskedFields() );
         return to.build();
     }
 
@@ -1428,6 +1429,7 @@ public abstract class AbstractProtoMapper {
         if (from.hasCacheConfig()) {
             to.setCacheConfig( fromProto( from.getCacheConfig() ) );
         }
+        to.setMaskedFields( from.getMaskedFieldsList().stream().collect(Collectors.toCollection(ArrayList::new)) );
         return to;
     }
 
@@ -1523,6 +1525,9 @@ public abstract class AbstractProtoMapper {
             to.setCreatedBy( from.getCreatedBy() );
         }
         to.putAllTaskToDomain( from.getTaskToDomain() );
+        if (from.getIdempotencyKey() != null) {
+            to.setIdempotencyKey( from.getIdempotencyKey() );
+        }
         return to.build();
     }
 
@@ -1548,6 +1553,7 @@ public abstract class AbstractProtoMapper {
         to.setFailedTaskNames( from.getFailedTaskNamesList().stream().collect(Collectors.toCollection(HashSet::new)) );
         to.setCreatedBy( from.getCreatedBy() );
         to.setTaskToDomain( from.getTaskToDomainMap() );
+        to.setIdempotencyKey( from.getIdempotencyKey() );
         return to;
     }
 
